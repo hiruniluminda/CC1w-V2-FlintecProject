@@ -1058,7 +1058,7 @@ namespace CC1w_V2_wifiboardTest
                 multimeterPort.WriteLine(":FUNC VOLT:DC" + ((char)13));
                 await Task.Delay(500);
 
-                MessageBox.Show("Multimeter set to DC Mode.");
+                MessageBox.Show("Multimeter set to DC Mode");
             }
             catch (Exception ex)
             {
