@@ -1,5 +1,6 @@
 using System;
 using System.IO.Ports;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Collections.Specialized.BitVector32;
@@ -1058,12 +1059,242 @@ namespace CC1w_V2_wifiboardTest
                 multimeterPort.WriteLine(":FUNC VOLT:DC" + ((char)13));
                 await Task.Delay(500);
 
-                MessageBox.Show("Multimeter set to DC Mode");
+                MessageBox.Show("Multimeter set to DC Mode.");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error communicating with Multimeter: {ex.Message}");
             }
+        }
+
+        private async void button20_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                OpenSerialPorts(); // Open and configure ports
+
+                // Clear buffers before sending commands
+                multimeterPort.DiscardInBuffer();
+                multimeterPort.DiscardOutBuffer();
+
+
+                multimeterPort.WriteLine(":FUNC CURR:DC" + ((char)13));
+                await Task.Delay(500);
+
+                MessageBox.Show("Multimeter set to AMP Mode.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error communicating with Multimeter: {ex.Message}");
+            }
+        }
+
+        private async Task ChangeToAmp(object sender, EventArgs e)
+        {
+            try
+            {
+                // Clear buffers before sending commands
+                multimeterPort.DiscardInBuffer();
+                multimeterPort.DiscardOutBuffer();
+
+                // Change multimeter to AMP mode
+                multimeterPort.WriteLine(":FUNC CURR:DC" + ((char)13));
+                await Task.Delay(500);
+
+                MessageBox.Show("Multimeter set to AMP Mode.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error setting multimeter to AMP mode: {ex.Message}");
+            }
+        }
+
+        private async Task ChangeToOhm(object sender, EventArgs e)
+        {
+            try
+            {
+                // Clear buffers before sending commands
+                multimeterPort.DiscardInBuffer();
+                multimeterPort.DiscardOutBuffer();
+
+                // Change multimeter to AMP mode
+                multimeterPort.WriteLine(":FUNC RES" + ((char)13));
+                await Task.Delay(500);
+
+                MessageBox.Show("Multimeter set to Ohm Mode.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error setting multimeter to Ohm mode: {ex.Message}");
+            }
+        }
+
+        private async void button21_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                label1.Text = "Reading 1: ";
+                label3.Text = "Reading 3: ";
+                listBox1.Items.Clear(); // Clear the list before starting
+                OpenSerialPorts();
+                await ChangeToOhm(sender, e);
+
+
+                for (char command = 'A'; command <= 'P'; command++) // Loop through 'A' to 'P'
+                {
+                    if(command.ToString() == "P")
+                    {
+                        SerialPort serialPort = new SerialPort("COM11", 9600);  // Adjust COM port as needed
+                        SerialPort multimeterPort = new SerialPort("COM3", 9600);  // Adjust COM port as needed
+
+                        await ChangeToAmp(sender, e);
+
+                    }
+
+                    string test = string.Empty;
+
+                    // Map specific commands to test names
+                    if (command.ToString() == "A")
+                    {
+                        test = "jumper 2, PIN 1 & PIN 6 (SUPPLY AND GND)";
+                    }
+                    else if (command.ToString() == "B")
+                    {
+                        test = "jumper 2, PIN 3 & PIN 6 (POS AND GND)";
+                    }
+                    else if (command.ToString() == "C")
+                    {
+                        test = "jumper 2, PIN 4 & PIN 6 (RST AND GND)";
+                    }
+                    else if (command.ToString() == "D")
+                    {
+                        test = "jumper 3, PIN 2 & PIN 1 (HOSTD+ AND GND)";
+                    }
+                    else if (command.ToString() == "E")
+                    {
+                        test = "jumper 3, PIN 3 & PIN 1 (HOSTD- AND GND)";
+                    }
+                    else if (command.ToString() == "F")
+                    {
+                        test = "jumper 3, PIN 4 & PIN 1 (HOSTDET AND GND)";
+                    }
+                    else if (command.ToString() == "G")
+                    {
+                        test = "jumper 3, PIN 5 & PIN 1 (STROKETOP AND GND)";
+                    }
+                    else if (command.ToString() == "H")
+                    {
+                        test = "jumper 3, PIN 6 & PIN 1 (STROKEBOT AND GND)";
+                    }
+                    else if (command.ToString() == "I")
+                    {
+                        test = "jumper 1, PIN 1 & PIN 8 (SUPPLY AND GND)";
+                    }
+                    else if (command.ToString() == "J")
+                    {
+                        test = "jumper 1, PIN 2 & PIN 8 (EM_PIN8 AND GND)";
+                    }
+                    else if (command.ToString() == "K")
+                    {
+                        test = "jumper 1, PIN 3 & PIN 8 (GPIOO AND GND)";
+                    }
+                    else if (command.ToString() == "L")
+                    {
+                        test = "jumper 1, PIN 4 & PIN 8 (TXD_RF AND GND)";
+                    }
+                    else if (command.ToString() == "M")
+                    {
+                        test = "jumper 1, PIN 5 & PIN 8 (RXD_RF AND GND)";
+                    }
+                    else if (command.ToString() == "N")
+                    {
+                        test = "jumper 1, PIN 6 & PIN 8 (UART2RX AND GND)";
+                    }
+                    else if (command.ToString() == "O")
+                    {
+                        test = "jumper 1, PIN 7 & PIN 8 (UART2TX AND GND)";
+                    }
+                    else if (command.ToString() == "P")
+                    {
+                        test = "jumper 1, PIN 6 & PIN 8 (SUPPLY AND GND)";
+                    }
+                    else
+                    {
+                        test = "Wrong Test";
+                    }
+
+                    OpenSerialPorts();
+
+                    serialPort.DiscardInBuffer();
+                    serialPort.DiscardOutBuffer();
+
+                    serialPort.Write(command.ToString()); // Send command to Arduino
+                    await Task.Delay(50); // Allow Arduino to process the command
+
+                    string response = serialPort.ReadLine(); // Read response from Arduino
+
+                    // Display Arduino response in TextBox and ListBox
+                    textBox3.Invoke(new Action(() => textBox3.Text = response));
+                  //  listBox1.Invoke(new Action(() => listBox1.Items.Add($"{command}: {response}")));
+
+                    multimeterPort.DiscardInBuffer();
+                    multimeterPort.DiscardOutBuffer();
+
+                    // Send request to Multimeter
+                    multimeterPort.Write(":FETC?" + ((char)13));
+
+                    string reading = multimeterPort.ReadLine();
+
+                    if (!string.IsNullOrEmpty(reading) && reading != "\n")
+                    {
+                        string[] readParts = reading.Split('\n');
+                        double readingValue = Convert.ToDouble(readParts[0]);
+
+                        string result = string.Empty;
+
+
+                        if (readingValue > 10000)
+                        {
+                            //  label5.Invoke(new Action(() => label2.Text = "Pass"));
+                            result = "Pass";
+                        }
+                        else
+                        {
+                            //  label5.Invoke(new Action(() => label2.Text = "Fail"));
+                            result = "Fail";
+
+                        }
+
+                        // Display the reading in labels and ListBox
+                      //  label4.Invoke(new Action(() => label4.Text = $"Reading 3: {readingValue}"));
+                        listBox1.Invoke(new Action(() => listBox1.Items.Add($"{test} : {readingValue} || {result}")));
+
+                       
+                    }
+
+                    OpenSerialPorts();
+
+                    // Send command to Arduino
+                    serialPort.Write("Z");
+
+                    await Task.Delay(50); // Wait for response asynchronously
+                    string response2 = serialPort.ReadLine();
+
+                    // Display Arduino response in ListBox
+                   // listBox1.Invoke(new Action(() => listBox1.Items.Add($"Command Z: {response2}")));
+                }
+
+                MessageBox.Show("All commands sent and responses received.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error communicating with Arduino: {ex.Message}");
+            }
+        }
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
