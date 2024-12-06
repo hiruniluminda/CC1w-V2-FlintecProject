@@ -54,10 +54,6 @@
             label2 = new Label();
             button19 = new Button();
             button20 = new Button();
-            label4 = new Label();
-            label5 = new Label();
-            label6 = new Label();
-            label7 = new Label();
             button21 = new Button();
             listBox1 = new ListBox();
             SuspendLayout();
@@ -319,42 +315,6 @@
             button20.UseVisualStyleBackColor = true;
             button20.Click += button20_Click;
             // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.Location = new Point(353, 22);
-            label4.Name = "label4";
-            label4.Size = new Size(38, 15);
-            label4.TabIndex = 26;
-            label4.Text = "label4";
-            // 
-            // label5
-            // 
-            label5.AutoSize = true;
-            label5.Location = new Point(353, 41);
-            label5.Name = "label5";
-            label5.Size = new Size(38, 15);
-            label5.TabIndex = 27;
-            label5.Text = "label5";
-            // 
-            // label6
-            // 
-            label6.AutoSize = true;
-            label6.Location = new Point(353, 74);
-            label6.Name = "label6";
-            label6.Size = new Size(38, 15);
-            label6.TabIndex = 28;
-            label6.Text = "label6";
-            // 
-            // label7
-            // 
-            label7.AutoSize = true;
-            label7.Location = new Point(353, 99);
-            label7.Name = "label7";
-            label7.Size = new Size(38, 15);
-            label7.TabIndex = 29;
-            label7.Text = "label7";
-            // 
             // button21
             // 
             button21.Location = new Point(266, 259);
@@ -380,10 +340,6 @@
             ClientSize = new Size(776, 368);
             Controls.Add(listBox1);
             Controls.Add(button21);
-            Controls.Add(label7);
-            Controls.Add(label6);
-            Controls.Add(label5);
-            Controls.Add(label4);
             Controls.Add(button20);
             Controls.Add(button19);
             Controls.Add(label2);
@@ -434,10 +390,6 @@
         private Label label2;
         private Button button19;
         private Button button20;
-        private Label label4;
-        private Label label5;
-        private Label label6;
-        private Label label7;
         private Button button21;
         private ListBox listBox1;
     }

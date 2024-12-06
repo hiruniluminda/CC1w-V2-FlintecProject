@@ -4,11 +4,23 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Collections.Specialized.BitVector32;
+using Microsoft.Data.SqlClient;
+
+
 
 namespace CC1w_V2_wifiboardTest
 {
+   
+
+
     public partial class Form1 : Form
     {
+        private static SqlConnection GetDatabaseConnection()
+        {
+            string connectionString = "Server=HIRUSHAN\\SQLEXPRESS;Database=CCIWDatabase;Trusted_Connection=True;Encrypt=True;TrustServerCertificate=True;";
+            return new SqlConnection(connectionString);
+        }
+
         // Declare SerialPort objects for Arduino and Multimeter
         SerialPort serialPort = new SerialPort("COM11", 9600);  // Adjust COM port as needed
         SerialPort multimeterPort = new SerialPort("COM3", 9600);  // Adjust COM port as needed
@@ -1129,6 +1141,9 @@ namespace CC1w_V2_wifiboardTest
             }
         }
 
+
+
+
         private async void button21_Click(object sender, EventArgs e)
         {
             try
@@ -1139,89 +1154,19 @@ namespace CC1w_V2_wifiboardTest
                 OpenSerialPorts();
                 await ChangeToOhm(sender, e);
 
+                string serialNumber = GenerateSerialNumber(); // Generate a unique serial number
 
                 for (char command = 'A'; command <= 'P'; command++) // Loop through 'A' to 'P'
                 {
-                    if(command.ToString() == "P")
+                    if (command.ToString() == "P")
                     {
                         SerialPort serialPort = new SerialPort("COM11", 9600);  // Adjust COM port as needed
                         SerialPort multimeterPort = new SerialPort("COM3", 9600);  // Adjust COM port as needed
 
                         await ChangeToAmp(sender, e);
-
                     }
 
-                    string test = string.Empty;
-
-                    // Map specific commands to test names
-                    if (command.ToString() == "A")
-                    {
-                        test = "jumper 2, PIN 1 & PIN 6 (SUPPLY AND GND)";
-                    }
-                    else if (command.ToString() == "B")
-                    {
-                        test = "jumper 2, PIN 3 & PIN 6 (POS AND GND)";
-                    }
-                    else if (command.ToString() == "C")
-                    {
-                        test = "jumper 2, PIN 4 & PIN 6 (RST AND GND)";
-                    }
-                    else if (command.ToString() == "D")
-                    {
-                        test = "jumper 3, PIN 2 & PIN 1 (HOSTD+ AND GND)";
-                    }
-                    else if (command.ToString() == "E")
-                    {
-                        test = "jumper 3, PIN 3 & PIN 1 (HOSTD- AND GND)";
-                    }
-                    else if (command.ToString() == "F")
-                    {
-                        test = "jumper 3, PIN 4 & PIN 1 (HOSTDET AND GND)";
-                    }
-                    else if (command.ToString() == "G")
-                    {
-                        test = "jumper 3, PIN 5 & PIN 1 (STROKETOP AND GND)";
-                    }
-                    else if (command.ToString() == "H")
-                    {
-                        test = "jumper 3, PIN 6 & PIN 1 (STROKEBOT AND GND)";
-                    }
-                    else if (command.ToString() == "I")
-                    {
-                        test = "jumper 1, PIN 1 & PIN 8 (SUPPLY AND GND)";
-                    }
-                    else if (command.ToString() == "J")
-                    {
-                        test = "jumper 1, PIN 2 & PIN 8 (EM_PIN8 AND GND)";
-                    }
-                    else if (command.ToString() == "K")
-                    {
-                        test = "jumper 1, PIN 3 & PIN 8 (GPIOO AND GND)";
-                    }
-                    else if (command.ToString() == "L")
-                    {
-                        test = "jumper 1, PIN 4 & PIN 8 (TXD_RF AND GND)";
-                    }
-                    else if (command.ToString() == "M")
-                    {
-                        test = "jumper 1, PIN 5 & PIN 8 (RXD_RF AND GND)";
-                    }
-                    else if (command.ToString() == "N")
-                    {
-                        test = "jumper 1, PIN 6 & PIN 8 (UART2RX AND GND)";
-                    }
-                    else if (command.ToString() == "O")
-                    {
-                        test = "jumper 1, PIN 7 & PIN 8 (UART2TX AND GND)";
-                    }
-                    else if (command.ToString() == "P")
-                    {
-                        test = "jumper 1, PIN 6 & PIN 8 (SUPPLY AND GND)";
-                    }
-                    else
-                    {
-                        test = "Wrong Test";
-                    }
+                    string test = GetTestName(command); // Fetch the test name
 
                     OpenSerialPorts();
 
@@ -1235,7 +1180,6 @@ namespace CC1w_V2_wifiboardTest
 
                     // Display Arduino response in TextBox and ListBox
                     textBox3.Invoke(new Action(() => textBox3.Text = response));
-                  //  listBox1.Invoke(new Action(() => listBox1.Items.Add($"{command}: {response}")));
 
                     multimeterPort.DiscardInBuffer();
                     multimeterPort.DiscardOutBuffer();
@@ -1252,24 +1196,20 @@ namespace CC1w_V2_wifiboardTest
 
                         string result = string.Empty;
 
-
                         if (readingValue > 10000)
                         {
-                            //  label5.Invoke(new Action(() => label2.Text = "Pass"));
                             result = "Pass";
                         }
                         else
                         {
-                            //  label5.Invoke(new Action(() => label2.Text = "Fail"));
                             result = "Fail";
-
                         }
 
                         // Display the reading in labels and ListBox
-                      //  label4.Invoke(new Action(() => label4.Text = $"Reading 3: {readingValue}"));
                         listBox1.Invoke(new Action(() => listBox1.Items.Add($"{test} : {readingValue} || {result}")));
 
-                       
+                        await SaveToDatabase(command.ToString(), test, readingValue, result, serialNumber);
+
                     }
 
                     OpenSerialPorts();
@@ -1279,9 +1219,6 @@ namespace CC1w_V2_wifiboardTest
 
                     await Task.Delay(50); // Wait for response asynchronously
                     string response2 = serialPort.ReadLine();
-
-                    // Display Arduino response in ListBox
-                   // listBox1.Invoke(new Action(() => listBox1.Items.Add($"Command Z: {response2}")));
                 }
 
                 MessageBox.Show("All commands sent and responses received.");
@@ -1291,6 +1228,59 @@ namespace CC1w_V2_wifiboardTest
                 MessageBox.Show($"Error communicating with Arduino: {ex.Message}");
             }
         }
+
+        private static int lastSerialNumber = 0;
+
+        private string GenerateSerialNumber()
+        {
+            lastSerialNumber++;
+            return lastSerialNumber.ToString();
+        }
+
+
+        private string GetTestName(char command)
+        {
+            return command switch
+            {
+                'A' => "jumper 2, PIN 1 & PIN 6 (SUPPLY AND GND)",
+                'B' => "jumper 2, PIN 3 & PIN 6 (POS AND GND)",
+                'C' => "jumper 2, PIN 4 & PIN 6 (RST AND GND)",
+                'D' => "jumper 3, PIN 2 & PIN 1 (HOSTD+ AND GND)",
+                'E' => "jumper 3, PIN 3 & PIN 1 (HOSTD- AND GND)",
+                'F' => "jumper 3, PIN 4 & PIN 1 (HOSTDET AND GND)",
+                'G' => "jumper 3, PIN 5 & PIN 1 (STROKETOP AND GND)",
+                'H' => "jumper 3, PIN 6 & PIN 1 (STROKEBOT AND GND)",
+                'I' => "jumper 1, PIN 1 & PIN 8 (SUPPLY AND GND)",
+                'J' => "jumper 1, PIN 2 & PIN 8 (EM_PIN8 AND GND)",
+                'K' => "jumper 1, PIN 3 & PIN 8 (GPIOO AND GND)",
+                'L' => "jumper 1, PIN 4 & PIN 8 (TXD_RF AND GND)",
+                'M' => "jumper 1, PIN 5 & PIN 8 (RXD_RF AND GND)",
+                'N' => "jumper 1, PIN 6 & PIN 8 (UART2RX AND GND)",
+                'O' => "jumper 1, PIN 7 & PIN 8 (UART2TX AND GND)",
+                'P' => "jumper 1, PIN 6 & PIN 8 (SUPPLY AND GND)",
+                _ => "Unknown Test"
+            };
+        }
+
+        private async Task SaveToDatabase(string command, string testName, double readingValue, string result, string serialNumber)
+        {
+            using (var connection = GetDatabaseConnection())
+            {
+                await connection.OpenAsync();
+                string query = "INSERT INTO TestResults (Command, TestName, ReadingValue, Result, SerialNumber) VALUES (@Command, @TestName, @ReadingValue, @Result, @SerialNumber)";
+                using (var commandObj = new SqlCommand(query, connection))
+                {
+                    commandObj.Parameters.AddWithValue("@Command", command);
+                    commandObj.Parameters.AddWithValue("@TestName", testName);
+                    commandObj.Parameters.AddWithValue("@ReadingValue", readingValue);
+                    commandObj.Parameters.AddWithValue("@Result", result);
+                    commandObj.Parameters.AddWithValue("@SerialNumber", serialNumber);
+
+                    await commandObj.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
